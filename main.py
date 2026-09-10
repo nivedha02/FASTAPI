@@ -1,7 +1,7 @@
 from random import randrange
 from typing import Optional
 
-from fastapi import FastAPI,Body
+from fastapi import FastAPI,Body, Response,status , HTTPException
 from pydantic import BaseModel
 
 app=FastAPI()
@@ -23,7 +23,12 @@ def find_post(id):
     for p in my_posts:
         if p["id"]==id:
             return p
-
+        
+def find_index_post(id):
+    for index,value in enumerate(my_posts):
+        if value["id"]==id:
+            return index
+        
 #@app->decorator (path to go) def function followed by message
 @app.get("/")
 def root():
@@ -40,7 +45,8 @@ def post_picture(payload: dict = Body(...)):
         "new_post": f"title {payload['title']} and description {payload['description']}"
     }
 
-@app.post("/posts")
+#for creation status code is 201
+@app.post("/posts",status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
     post_dict= post.dict()
     post_dict['id']=randrange(0,1000000)
@@ -56,16 +62,35 @@ def get_latest_post():
 
 #id is a path parameter which is used to get the post with the given id. The id is passed as a string in the URL and is converted to an integer using int() function. The find_post() function is called to find the post with the given id and return it. If the post is not found, it will return None.
 #id is expected to be an integer, so we specify the type of id as int in the function definition. FastAPI will automatically convert the path parameter to the specified type and validate it. If the conversion fails, it will return a 422 Unprocessable Entity error.
+#Whenever a post is not found, we return a 404 status code to indicate that the resource was not found. We can set the status code using the Response object from FastAPI. We can also return a custom message in the response body to provide more information about the error.
 @app.get("/posts/{id}")
-def get_post(id: int):
+def get_post(id: int , Response: Response):
     print(type(id))
     post=find_post(id)
     if not post:
-        return{"message":f"post with id {id} not found"}
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
+       '''Response.status_code=status.HTTP_404_NOT_FOUND
+       return{"message":f"{Response.status_code} Error!!! post with id {id} not found"}'''
     return{"post_detail": post}
 
-
-@app.delete("posts/{id}")
+#For deletion status code is 204
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id:int):
-    my_posts.remove(find_post(id))
-    return{"message":f"post with id {id} has been deleted successfully"}
+    index=find_index_post(id)
+    if index==None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
+    my_posts.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.put("/posts/{id}")
+def update_post(id:int, post:Post):
+        index=find_index_post(id)
+        if index==None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
+        post_dict=post.dict()
+        post_dict['id']=id
+        my_posts[index]=post_dict
+        return{"data":post_dict}
+                  
+
+
