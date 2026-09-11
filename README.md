@@ -5,7 +5,7 @@
 
 ##### To run uvicorn server with auto re-load when ever we save a code
 `uvicorn main:app --reload` - our main file location followed by function name
-'uvicorn app.main:app -- reload` - If we move our file to app floder so , app->main.py->app() function
+`uvicorn app.main:app -- reload` - If we move our file to app floder so , `app->main.py->app()` function as we need app as imporatable module
 
 ### FastAPI Documentation 
 * FastAPI includes ReDoc to provide a clean, professional, and easy-to-read reference manual for your API.While the default Swagger UI is interactive and great for testing endpoints, ReDoc is built for documentation clarity and long-term maintenance. It automatically converts your FastAPI code's OpenAPI schema into a highly organized, user-friendly webpage.
