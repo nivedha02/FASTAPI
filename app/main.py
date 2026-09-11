@@ -54,7 +54,7 @@ def create_post(post: Post):
     return{"data": post_dict}
     print(post.rating)
     return {"data": f"title {post.title} and description {post.description} and published {post.published} and rating {post.rating}"}
-
+#To get latest post
 @app.get("/posts/latest")
 def get_latest_post():
     post=my_posts[len(my_posts)-1]
@@ -81,7 +81,7 @@ def delete_post(id:int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
     my_posts.pop(index)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
+#To update data
 @app.put("/posts/{id}")
 def update_post(id:int, post:Post):
         index=find_index_post(id)
