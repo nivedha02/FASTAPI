@@ -13,3 +13,7 @@
 `http://127.0.0.1:8000/redoc` - You will see the alternative automatic documentation (provided by ReDoc)
 <img width="828" height="281" alt="image" src="https://github.com/user-attachments/assets/7559a248-d99e-41b3-830e-4a8eacb37bff" />
 
+## SQL Insert,Delete,Update codes in pgadmin
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/2ca125fb-1fb4-4b63-9688-4b3eef289019" />
+
+
