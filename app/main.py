@@ -3,6 +3,9 @@ from typing import Optional
 
 from fastapi import FastAPI,Body, Response,status , HTTPException
 from pydantic import BaseModel
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
 
 app=FastAPI()
 
@@ -12,9 +15,20 @@ class Post(BaseModel):
     title:str
     description:str
     published:bool=True
-    rating:Optional[int]=None
 
+# database name ->based on pgadmin server name , username and password ->based on pgadmin username and password 
+while True:
+    try:
+        connection= psycopg2.connect(host='localhost',database='postgres',user='postgres',password='12345678',cursor_factory=RealDictCursor)
+        cursor=connection.cursor() # calling the cursor method to execute the queries
+        print("Database connection was successful")
+        break
+    except Exception as error:
+        print("Database connection failed")
+        print("Error:",error)
+        time.sleep(2) # wait for 2 seconds before trying again
 
+    
 #in-memory database
 my_posts=[{"title":"title of post 1","content":"content of post 1","id":1},{"title":"title of post 2","content":"content of post 2","id":2}]
 
@@ -34,9 +48,12 @@ def find_index_post(id):
 def root():
     return{"message":"Welcome World!!"} 
 
+
 @app.get("/posts")
 def get_post():
-    return{"data": my_posts}
+    cursor.execute
+    posts=cursor.fetchall("""SELECT * FROM posts""")
+    return{"data": posts}
 
 @app.post("/postpicture")
 def post_picture(payload: dict = Body(...)):
@@ -48,10 +65,11 @@ def post_picture(payload: dict = Body(...)):
 #for creation status code is 201
 @app.post("/posts",status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
-    post_dict= post.dict()
-    post_dict['id']=randrange(0,1000000)
-    my_posts.append(post_dict)
-    return{"data": post_dict}
+    cursor.execute(""" INSERT INTO posts (title,content,published) VALUES (%s,%s,%s) Returning * """,
+                   (post.title,post.description,post.published))
+    new_post=cursor.fetchone()
+    connection.commit() #To save the changes to the database
+    return{"data": new_post}
     print(post.rating)
     return {"data": f"title {post.title} and description {post.description} and published {post.published} and rating {post.rating}"}
 
