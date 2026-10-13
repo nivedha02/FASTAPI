@@ -5,6 +5,7 @@
 
 ##### To run uvicorn server with auto re-load when ever we save a code
 `uvicorn main:app --reload` - our main file location followed by function name
+
 `uvicorn app.main:app -- reload` - If we move our file to app floder so , `app->main.py->app()` function as we need app as imporatable module
 
 ### FastAPI Documentation 
