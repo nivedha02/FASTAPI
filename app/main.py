@@ -82,9 +82,9 @@ def get_latest_post():
 #id is expected to be an integer, so we specify the type of id as int in the function definition. FastAPI will automatically convert the path parameter to the specified type and validate it. If the conversion fails, it will return a 422 Unprocessable Entity error.
 #Whenever a post is not found, we return a 404 status code to indicate that the resource was not found. We can set the status code using the Response object from FastAPI. We can also return a custom message in the response body to provide more information about the error.
 @app.get("/posts/{id}")
-def get_post(id: int , Response: Response):
-    print(type(id))
-    post=find_post(id)
+def get_post(id: int ):
+    cursor.execute("""Select * from posts where id = %s """,(str(id),))
+    post=cursor.fetchone()
     if not post:
        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
        '''Response.status_code=status.HTTP_404_NOT_FOUND
@@ -94,21 +94,25 @@ def get_post(id: int , Response: Response):
 #For deletion status code is 204
 @app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id:int):
-    index=find_index_post(id)
-    if index==None:
+    cursor.execute("""Delete from posts where id=%s returning * """,(str(id),))
+    deleted_post=cursor.fetchone()
+    connection.commit() #To save the changes to the database
+    if deleted_post==None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
-    my_posts.pop(index)
+    
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 #To update data
 @app.put("/posts/{id}")
 def update_post(id:int, post:Post):
-        index=find_index_post(id)
-        if index==None:
+        cursor.execute("""UPDATE posts SET title=%s,content=%s,published=%s where id=%s returning *""",
+                       (post.title,post.description,post.published,str(id)))
+        updated_post=cursor.fetchone()
+        connection.commit() #To save the changes to the database
+        if updated_post==None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
-        post_dict=post.dict()
-        post_dict['id']=id
-        my_posts[index]=post_dict
-        return{"data":post_dict}
+
+        return{"data":updated_post}
                   
 
 
